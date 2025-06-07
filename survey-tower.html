@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Desain Tower Telekomunikasi Untuk Rooftop</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .survey-form {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .radio-group, .checkbox-group {
+            margin-bottom: 10px;
+        }
+        .radio-group label, .checkbox-group label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .submit-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: background-color 0.3s;
+        }
+        .submit-btn:hover {
+            background-color: #2980b9;
+        }
+        .required {
+            color: #e74c3c;
+        }
+        .form-note {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Survey Desain Tower Telekomunikasi</h1>
+    
+    <form class="survey-form" id="surveyForm">
+        <div class="form-group">
+            <label for="responden">Nama Responden <span class="required">*</span></label>
+            <input type="text" id="responden" name="responden" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="perusahaan">Nama Perusahaan/Operator <span class="required">*</span></label>
+            <input type="text" id="perusahaan" name="perusahaan" required>
+        </div>
+        
+        <div class="form-group">
+            <label>1. Apakah bangunan sudah memiliki blueprint/gambar teknik yang menunjukkan detail tulangan? <span class="required">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="blueprint" value="Ya" required> Ya</label>
+                <label><input type="radio" name="blueprint" value="Tidak"> Tidak</label>
+                <label><input type="radio" name="blueprint" value="Sebagian"> Sebagian</label>
+            </div>
+            <label for="blueprint_note" class="form-note">Jika ada, mohon diupload/dikirimkan secara terpisah</label>
+        </div>
+        
+        <div class="form-group">
+            <label>2. Bagaimana bentuk bangunan jika dilihat dari jauh? <span class="required">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="bentuk_bangunan" value="Slender" required> Slender (ramping)</label>
+                <label><input type="radio" name="bentuk_bangunan" value="Bulkier"> Bulkier (besar/massif)</label>
+                <label><input type="radio" name="bentuk_bangunan" value="Unik"> Bentuk unik/khusus</label>
+            </div>
+            <textarea name="bentuk_bangunan_detail" placeholder="Deskripsi tambahan tentang bentuk bangunan..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="ketinggian">3. Ketinggian rooftop yang diinginkan (dalam meter) <span class="required">*</span></label>
+            <input type="number" id="ketinggian" name="ketinggian" min="5" max="200" required>
+            <label for="ketinggian_note" class="form-note">Mohon sesuaikan dengan kebutuhan operator</label>
+        </div>
+        
+        <div class="form-group">
+            <label for="ukuran_kolom">4. Ukuran kolom yang direncanakan <span class="required">*</span></label>
+            <input type="text" id="ukuran_kolom" name="ukuran_kolom" placeholder="Contoh: 40x40 cm" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="susunan_kolom">5. Susunan kolom dan jarak antar kolom <span class="required">*</span></label>
+            <textarea id="susunan_kolom" name="susunan_kolom" required placeholder="Deskripsi susunan kolom dan jarak antar kolom..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>6. Bentuk pondasi yang direncanakan <span class="required">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="pondasi" value="Tapak" required> Tapak</label>
+                <label><input type="radio" name="pondasi" value="Sumuran"> Sumuran</label>
+                <label><input type="radio" name="pondasi" value="Pancang"> Pancang</label>
+                <label><input type="radio" name="pondasi" value="Lainnya"> Lainnya</label>
+            </div>
+            <textarea name="pondasi_detail" placeholder="Deskripsi detail pondasi..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="space_perangkat">7. Kebutuhan space untuk penempatan perangkat <span class="required">*</span></label>
+            <textarea id="space_perangkat" name="space_perangkat" required placeholder="Deskripsi kebutuhan ruang untuk perangkat..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>8. Apakah ada utilitas sekitar (JTM listrik, pipa gas, dll) yang perlu dipertimbangkan? <span class="required">*</span></label>
+            <div class="radio-group">
+                <label><input type="radio" name="utilitas" value="Ya" required> Ya</label>
+                <label><input type="radio" name="utilitas" value="Tidak"> Tidak</label>
+                <label><input type="radio" name="utilitas" value="Tidak tahu"> Tidak tahu</label>
+            </div>
+            <textarea name="utilitas_detail" placeholder="Deskripsi utilitas sekitar yang perlu dihindari..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="catatan_tambahan">Catatan Tambahan</label>
+            <textarea id="catatan_tambahan" name="catatan_tambahan" placeholder="Masukkan catatan tambahan atau pertanyaan khusus..."></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">Kirim Survey</button>
+    </form>
+
+    <script>
+        document.getElementById('surveyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Kumpulkan data form
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            // Format data untuk email
+            const emailBody = `
+                Survey Desain Tower Telekomunikasi
+                ================================
+                
+                Nama Responden: ${data.responden}
+                Email: ${data.email}
+                Perusahaan/Operator: ${data.perusahaan}
+                
+                1. Blueprint/Gambar Teknik: ${data.blueprint}
+                
+                2. Bentuk Bangunan: ${data.bentuk_bangunan}
+                Detail: ${data.bentuk_bangunan_detail || 'Tidak ada'}
+                
+                3. Ketinggian Rooftop: ${data.ketinggian} meter
+                
+                4. Ukuran Kolom: ${data.ukuran_kolom}
+                
+                5. Susunan Kolom:
+                ${data.susunan_kolom}
+                
+                6. Bentuk Pondasi: ${data.pondasi}
+                Detail: ${data.pondasi_detail || 'Tidak ada'}
+                
+                7. Space Perangkat:
+                ${data.space_perangkat}
+                
+                8. Utilitas Sekitar: ${data.utilitas}
+                Detail: ${data.utilitas_detail || 'Tidak ada'}
+                
+                Catatan Tambahan:
+                ${data.catatan_tambahan || 'Tidak ada'}
+            `;
+            
+            // Kirim email (ini akan membuka client email default)
+            const subject = `Survey Tower Telekomunikasi - ${data.perusahaan}`;
+            const mailtoLink = `mailto:dwigantoro.public@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+            
+            window.location.href = mailtoLink;
+        
+            
+            // Tampilkan konfirmasi
+            alert('Terima kasih! Survey akan dikirim via email. Silakan lengkapi pengiriman email di client email Anda.');
+        });
+    </script>
+</body>
+</html>

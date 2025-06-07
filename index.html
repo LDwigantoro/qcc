@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,27 +8,53 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="info-box"></div>
-    <button id="ar-button">Start AR Experience</button>
+    <button id="ar-button">QCC PDS</button>
     <div id="fallback-container"></div>
-    
-    <div id="ar-quicklook">
-        <h2>AR Menara Telekomunikasi</h2>
-        <p>Untuk pengalaman AR terbaik di iPhone:</p>
-        <a href="assets/tower.usdz" rel="ar">
-            <img src="assets/tower.png" alt="View Tower in AR">
-            <p>Tap untuk membuka AR Quick Look</p>
-        </a>
+
+    <div id="auth-container" class="auth-container">
+        <div class="auth-form">
+            <h2>Login Aplikasi AR Menara</h2>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button id="login-btn">Login</button>
+            <div id="error-message" class="error-message hidden"></div>
+            <p style="margin-top: 1rem; font-size: 12px; color: #666;">
+                Gunakan username: admin dan password: admin123
+            </p>
+        </div>
     </div>
 
-    <!-- Three.js and related libraries -->
+    <div id="app-content" class="hidden">
+        <div id="info-box"></div>
+        <button id="ar-button">QCC PDS</button>
+        <div id="fallback-container"></div>
+
+        <div id="ar-quicklook">
+            <h2>Aplikasi Survey Sitac & AR Tower</h2>
+            <div class="tower-option" data-model="assets/tower.glb">
+                <img src="assets/tower.png" alt="View Tower in AR">
+                <p>Tap Untuk Melihat Tipe Mini Tower</p>
+            </div>
+            <div class="tower-option" data-model="assets/tower_2.glb">
+                <img src="assets/tower_2.png" alt="View Tower in AR">
+                <p>Tap Untuk Melihat Tipe Pole 6 Meter</p>
+            </div>
+            <div class="tower-option" data-model="assets/tower_3.glb">
+                <img src="assets/tower_3.png" alt="View Tower in AR">
+                <p>Tap Untuk Melihat Tipe Mini Pole 9 Meter</p>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/webxr/ARButton.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    
-    <!-- Main application script -->
+
     <script src="app.js"></script>
 </body>
+
 </html>
