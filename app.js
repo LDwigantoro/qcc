@@ -32,7 +32,6 @@ async function checkARSupport() {
 function showQuickLook() {
     document.getElementById('ar-button').style.display = 'none';
     document.getElementById('ar-quicklook').style.display = 'block';
-    showInfo("Gunakan AR Quick Look untuk pengalaman AR di iPhone");
 }
 
 function initWebXR() {
