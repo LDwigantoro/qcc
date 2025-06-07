@@ -3,7 +3,6 @@ let fallbackScene, fallbackCamera, fallbackRenderer;
 let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 let isAndroid = /Android/i.test(navigator.userAgent);
 let isARSupported = false;
-let selectedModelPath = 'assets/tower.glb'; // Model default
 
 document.addEventListener('DOMContentLoaded', function() {
     if (localStorage.getItem('isAuthenticated') === 'true') {
@@ -46,28 +45,6 @@ async function initApp() {
     } else {
         init3DFallback();
     }
-    
-    setupTowerSelection();
-}
-
-function setupTowerSelection() {
-    const towerOptions = document.querySelectorAll('.tower-option');
-    
-    towerOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            // Update model yang dipilih
-            selectedModelPath = this.getAttribute('data-model');
-            
-            // Update UI
-            towerOptions.forEach(opt => opt.classList.remove('selected'));
-            this.classList.add('selected');
-            
-            // Load model baru jika sudah inisialisasi
-            if (scene || fallbackScene) {
-                loadSelectedModel();
-            }
-        });
-    });
 }
 
 async function checkARSupport() {
@@ -113,7 +90,7 @@ function initWebXR() {
         }
     });
 
-    loadSelectedModel().then(() => {
+    loadModel().then(() => {
         controller = renderer.xr.getController(0);
         controller.addEventListener('select', onSelect);
         scene.add(controller);
@@ -143,7 +120,7 @@ function init3DFallback() {
     fallbackScene.add(light);
     fallbackScene.add(new THREE.AmbientLight(0x404040));
 
-    loadSelectedModel().then(gltf => {
+    loadModel().then(gltf => {
         model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
         fallbackScene.add(model);
@@ -167,27 +144,12 @@ function init3DFallback() {
     });
 }
 
-function loadSelectedModel() {
+function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
         loader.load(
-            selectedModelPath,
+            './assets/tower.glb',
             (gltf) => {
-                // Hapus model lama jika ada
-                if (model && scene) scene.remove(model);
-                if (model && fallbackScene) fallbackScene.remove(model);
-                
-                model = gltf.scene;
-                model.visible = false; // Sembunyikan sampai ditempatkan di AR
-                
-                // Tambahkan ke scene yang sesuai
-                if (renderer && renderer.xr.enabled) {
-                    scene.add(model);
-                } else if (fallbackScene) {
-                    model.scale.set(0.5, 0.5, 0.5);
-                    fallbackScene.add(model);
-                }
-                
                 resolve(gltf);
             },
             undefined,
