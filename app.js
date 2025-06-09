@@ -126,15 +126,17 @@ function init3DFallback() {
 function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
+        console.log("Loading model from:", currentModelUrl); // Debug
         loader.load(
-            currentModelUrl, // Menggunakan currentModelUrl bukan path statis
+            currentModelUrl,
             (gltf) => {
+                console.log("Model loaded successfully");
                 resolve(gltf);
             },
             undefined,
             (error) => {
                 console.error("Failed to load model:", error);
-                showInfo("Gagal memuat model 3D");
+                showInfo("Gagal memuat model 3D: " + currentModelUrl); // Tunjukkan path yang error
                 reject(error);
             }
         );
@@ -190,7 +192,6 @@ function setupModelSelector() {
     selector.addEventListener('change', (e) => {
         currentModelUrl = modelUrls[e.target.value];
 
-        // Jika sudah ada model, reload dengan yang baru
         if (model) {
             if (isARSupported && scene) {
                 scene.remove(model);
