@@ -214,26 +214,29 @@ function setupModelSelector() {
 }
 
 function showMainMenu() {
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
+    document.querySelectorAll('.container-fluid').forEach(page => {
+        page.classList.add('d-none');
+        page.classList.remove('active-page');
     });
-    document.getElementById('main-menu').classList.add('active');
+    document.getElementById('main-menu').classList.remove('d-none');
+    document.getElementById('main-menu').classList.add('active-page');
 }
 
 function loadModelViewer() {
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
+    document.querySelectorAll('.container-fluid').forEach(page => {
+        page.classList.add('d-none');
+        page.classList.remove('active-page');
     });
 
     currentModelUrl = `./assets/${currentModel}.glb`;
 
     if (isIOS && !isARSupported) {
-        document.getElementById('ar-quicklook').classList.add('active');
+        document.getElementById('ar-quicklook').classList.remove('d-none');
     } else if (isARSupported) {
-        document.getElementById('viewer-page').classList.add('active');
+        document.getElementById('viewer-page').classList.remove('d-none');
         initWebXR();
     } else {
-        document.getElementById('viewer-page').classList.add('active');
+        document.getElementById('viewer-page').classList.remove('d-none');
         init3DFallback();
     }
 }
