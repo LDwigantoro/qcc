@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,38 +8,44 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="info-box"></div>
+    <div id="model-selector">
+        <h3>Pilih Menara:</h3>
+        <select id="tower-select">
+            <option value="tower1.glb">Menara Utama</option>
+            <option value="tower2.glb">Menara Modern</option>
+            <option value="tower3.glb">Menara Klasik</option>
+        </select>
+    </div>
     <button id="ar-button">Mulai Aplikasi</button>
     <div id="fallback-container"></div>
-    
-    <div id="ar-quicklook">
-        <h2>QCC PDS 2025</h2>
-        <a href="assets/tower.usdz" rel="ar">
-            <img src="assets/tower.png" alt="View Tower in AR">
-            <p>Tap untuk membuka AR Mini Tower</p>
-        </a>
-    </div>
 
     <div id="ar-quicklook">
-        <a href="assets/tower_2.usdz" rel="ar">
-            <img src="assets/tower_2.png" alt="View Tower in AR">
-            <p>Tap untuk membuka AR Pole 6 M</p>
-        </a>
-    </div>
-
-        <div id="ar-quicklook">
-        <a href="assets/tower_3.usdz" rel="ar">
-            <img src="assets/tower_6.png" alt="View Tower in AR">
-            <p>Tap untuk membuka AR Pole 9 M</p>
-        </a>
+        <h2>Pilih Menara AR:</h2>
+        <div class="quicklook-options">
+            <a href="assets/tower1.usdz" rel="ar">
+                <img src="assets/tower1-preview.png" alt="Menara Utama">
+                <p>Menara Utama</p>
+            </a>
+            <a href="assets/tower2.usdz" rel="ar">
+                <img src="assets/tower2-preview.png" alt="Menara Modern">
+                <p>Menara Modern</p>
+            </a>
+            <a href="assets/tower3.usdz" rel="ar">
+                <img src="assets/tower3-preview.png" alt="Menara Klasik">
+                <p>Menara Klasik</p>
+            </a>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/webxr/ARButton.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    
+
     <script src="app.js"></script>
 </body>
+
 </html>

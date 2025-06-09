@@ -3,12 +3,19 @@ let fallbackScene, fallbackCamera, fallbackRenderer;
 let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 let isAndroid = /Android/i.test(navigator.userAgent);
 let isARSupported = false;
+let currentModelUrl = './assets/tower.glb'; // Default
+const modelUrls = {
+    'tower1.glb': './assets/tower.glb',
+    'tower2.glb': './assets/tower_2.glb',
+    'tower3.glb': './assets/tower_3.glb'
+};
 
 init();
 
 async function init() {
     isARSupported = await checkARSupport();
-    
+    setupModelSelector();
+
     if (isIOS && !isARSupported) {
         showQuickLook();
     } else if (isARSupported) {
@@ -20,7 +27,7 @@ async function init() {
 
 async function checkARSupport() {
     if (!navigator.xr) return false;
-    
+
     try {
         return await navigator.xr.isSessionSupported('immersive-ar');
     } catch (e) {
@@ -46,7 +53,7 @@ function initWebXR() {
 
     document.getElementById('ar-button').addEventListener('click', async () => {
         try {
-            const button = ARButton.createButton(renderer, { 
+            const button = ARButton.createButton(renderer, {
                 requiredFeatures: ['hit-test'],
                 optionalFeatures: ['dom-overlay'],
                 domOverlay: { root: document.body }
@@ -68,7 +75,7 @@ function initWebXR() {
     });
 
     window.addEventListener('resize', onWindowResize);
-    
+
     animate();
 }
 
@@ -79,28 +86,28 @@ function init3DFallback() {
 
     fallbackScene = new THREE.Scene();
     fallbackScene.background = new THREE.Color(0xf0f0f0);
-    
+
     fallbackCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     fallbackCamera.position.z = 3;
-    
+
     fallbackRenderer = new THREE.WebGLRenderer({ antialias: true });
     fallbackRenderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('fallback-container').appendChild(fallbackRenderer.domElement);
-    
+
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(1, 1, 1);
     fallbackScene.add(light);
     fallbackScene.add(new THREE.AmbientLight(0x404040));
-    
+
     loadModel().then(gltf => {
         model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
         fallbackScene.add(model);
-        
+
         const controls = new THREE.OrbitControls(fallbackCamera, fallbackRenderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.25;
-        
+
         function animateFallback() {
             requestAnimationFrame(animateFallback);
             controls.update();
@@ -120,7 +127,7 @@ function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
         loader.load(
-            './assets/tower.glb',
+            currentModelUrl, // Menggunakan currentModelUrl bukan path statis
             (gltf) => {
                 resolve(gltf);
             },
@@ -150,7 +157,7 @@ function onWindowResize() {
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
-    
+
     if (fallbackCamera && fallbackRenderer) {
         fallbackCamera.aspect = window.innerWidth / window.innerHeight;
         fallbackCamera.updateProjectionMatrix();
@@ -170,10 +177,37 @@ function showInfo(message) {
     const infoBox = document.getElementById('info-box');
     infoBox.textContent = message;
     infoBox.style.display = 'block';
-    
+
     if (message) {
         setTimeout(() => {
             infoBox.style.display = 'none';
         }, 5000);
     }
+}
+
+function setupModelSelector() {
+    const selector = document.getElementById('tower-select');
+    selector.addEventListener('change', (e) => {
+        currentModelUrl = modelUrls[e.target.value];
+
+        // Jika sudah ada model, reload dengan yang baru
+        if (model) {
+            if (isARSupported && scene) {
+                scene.remove(model);
+            } else if (fallbackScene) {
+                fallbackScene.remove(model);
+            }
+
+            loadModel().then(gltf => {
+                model = gltf.scene;
+                if (isARSupported) {
+                    model.visible = false;
+                    scene.add(model);
+                } else {
+                    model.scale.set(0.5, 0.5, 0.5);
+                    fallbackScene.add(model);
+                }
+            });
+        }
+    });
 }
