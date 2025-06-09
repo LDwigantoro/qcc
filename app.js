@@ -3,25 +3,25 @@ let fallbackScene, fallbackCamera, fallbackRenderer;
 let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 let isAndroid = /Android/i.test(navigator.userAgent);
 let isARSupported = false;
-let currentModelUrl = './assets/tower.glb'; // Default
-const modelUrls = {
-    'tower1.glb': './assets/tower.glb',
-    'tower2.glb': './assets/tower_2.glb',
-    'tower3.glb': './assets/tower_3.glb'
-};
+let currentModel = 'tower1';
 
 init();
 
 async function init() {
+    document.querySelectorAll('.tower-option').forEach(option => {
+        option.addEventListener('click', function () {
+            currentModel = this.getAttribute('data-model');
+            loadModelViewer();
+        });
+    });
+
+    document.getElementById('back-button').addEventListener('click', showMainMenu);
+    document.getElementById('quicklook-back').addEventListener('click', showMainMenu);
+
     isARSupported = await checkARSupport();
-    setupModelSelector();
 
     if (isIOS && !isARSupported) {
         showQuickLook();
-    } else if (isARSupported) {
-        initWebXR();
-    } else {
-        init3DFallback();
     }
 }
 
@@ -211,4 +211,29 @@ function setupModelSelector() {
             });
         }
     });
+}
+
+function showMainMenu() {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    document.getElementById('main-menu').classList.add('active');
+}
+
+function loadModelViewer() {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+
+    currentModelUrl = `./assets/${currentModel}.glb`;
+
+    if (isIOS && !isARSupported) {
+        document.getElementById('ar-quicklook').classList.add('active');
+    } else if (isARSupported) {
+        document.getElementById('viewer-page').classList.add('active');
+        initWebXR();
+    } else {
+        document.getElementById('viewer-page').classList.add('active');
+        init3DFallback();
+    }
 }

@@ -3,49 +3,61 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QCC PDS 2025</title>
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div id="info-box"></div>
-    <div id="model-selector">
-        <h3>Pilih Menara:</h3>
-        <select id="tower-select">
-            <option value="tower1.glb">Menara Utama</option>
-            <option value="tower2.glb">Menara Modern</option>
-            <option value="tower3.glb">Menara Klasik</option>
-        </select>
+    <div id="main-menu" class="page active">
+        <h1>Pilih Menara</h1>
+        <div class="tower-options">
+            <div class="tower-option" data-model="tower1">
+                <img src="assets/tower1.png" alt="Menara Utama">
+                <p>Menara Utama</p>
+            </div>
+            <div class="tower-option" data-model="tower2">
+                <img src="assets/tower2.png" alt="Menara Modern">
+                <p>Menara Modern</p>
+            </div>
+            <div class="tower-option" data-model="tower3">
+                <img src="assets/tower3.png" alt="Menara Klasik">
+                <p>Menara Klasik</p>
+            </div>
+        </div>
     </div>
-    <button id="ar-button">Mulai Aplikasi</button>
-    <div id="fallback-container"></div>
 
-    <div id="ar-quicklook">
-        <h2>Pilih Menara AR:</h2>
+    <div id="viewer-page" class="page">
+        <div id="info-box"></div>
+        <button id="ar-button">Mulai AR</button>
+        <div id="fallback-container"></div>
+        <button id="back-button">Kembali</button>
+    </div>
+
+    <div id="ar-quicklook" class="page">
+        <h2>Pilih Menara AR</h2>
         <div class="quicklook-options">
-            <a href="assets/tower.usdz" rel="ar">
-                <img src="assets/tower.png" alt="Menara Utama">
+            <a href="assets/tower1.usdz" rel="ar">
+                <img src="assets/tower1.png" alt="Menara Utama">
                 <p>Menara Utama</p>
             </a>
-            <a href="assets/tower_2.usdz" rel="ar">
-                <img src="assets/tower_2.png" alt="Menara Modern">
+            <a href="assets/tower2.usdz" rel="ar">
+                <img src="assets/tower2.png" alt="Menara Modern">
                 <p>Menara Modern</p>
             </a>
-            <a href="assets/tower_3.usdz" rel="ar">
-                <img src="assets/tower_3.png" alt="Menara Klasik">
+            <a href="assets/tower3.usdz" rel="ar">
+                <img src="assets/tower3.png" alt="Menara Klasik">
                 <p>Menara Klasik</p>
             </a>
         </div>
+        <button id="quicklook-back">Kembali</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/webxr/ARButton.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-
     <script src="app.js"></script>
 </body>
 
