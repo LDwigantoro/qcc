@@ -63,7 +63,54 @@ body {
     }
 }
 
-#main-menu, #viewer-page, #ar-quicklook {
+#main-menu,
+#viewer-page,
+#ar-quicklook {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+}
+
+/* Tambahkan CSS khusus untuk touch devices */
+@media (hover: none) {
+    .tower-option:hover {
+        transform: none;
+        box-shadow: none !important;
+    }
+
+    .tower-option:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+}
+
+/* Perbaikan viewport iOS */
+@supports (-webkit-touch-callout: none) {
+    body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    .container-fluid {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+}
+
+/* Optimasi card untuk touch */
+.tower-option {
+    min-height: 120px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+/* Perbaikan scroll untuk iOS */
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
+body {
+    overflow: auto;
+    height: 100%;
+    overscroll-behavior-y: contain;
 }

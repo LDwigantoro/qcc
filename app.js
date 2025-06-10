@@ -1,27 +1,39 @@
 let camera, scene, renderer, controller, model;
 let fallbackScene, fallbackCamera, fallbackRenderer;
 let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 let isAndroid = /Android/i.test(navigator.userAgent);
 let isARSupported = false;
 let currentModel = 'tower1';
 
 init();
-
 async function init() {
-    document.querySelectorAll('.tower-option').forEach(option => {
-        option.addEventListener('click', function () {
-            currentModel = this.getAttribute('data-model');
-            loadModelViewer();
-        });
-    });
-
-    document.getElementById('back-button').addEventListener('click', showMainMenu);
-    document.getElementById('quicklook-back').addEventListener('click', showMainMenu);
+    setupTouchEvents();
+    setupEventListeners();
 
     isARSupported = await checkARSupport();
+    if (isIOS && !isARSupported) showQuickLook();
+}
 
-    if (isIOS && !isARSupported) {
-        showQuickLook();
+function setupTouchEvents() {
+    const options = document.querySelectorAll('.tower-option, a[rel="ar"]');
+
+    options.forEach(option => {
+        option.addEventListener('click', handleSelection);
+        option.addEventListener('touchend', handleSelection);
+
+        if (isIOS) {
+            option.style.cursor = 'pointer';
+            option.style.webkitTapHighlightColor = 'transparent';
+        }
+    });
+}
+
+function handleSelection(e) {
+    e.preventDefault();
+    if (this.classList.contains('tower-option')) {
+        currentModel = this.getAttribute('data-model');
+        loadModelViewer();
     }
 }
 
@@ -246,4 +258,21 @@ function loadModelViewer() {
     }
 
     enableScroll();
+}
+
+function setupEventListeners() {
+    [['back-button', showMainMenu],
+    ['quicklook-back', showMainMenu]].forEach(([id, handler]) => {
+        document.getElementById(id).addEventListener('click', handler);
+    });
+
+    window.addEventListener('resize', debounce(onWindowResize, 100));
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, arguments), wait);
+    };
 }
