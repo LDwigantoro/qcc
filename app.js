@@ -1,77 +1,115 @@
 let camera, scene, renderer, controller, model;
 let fallbackScene, fallbackCamera, fallbackRenderer;
-let isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-let isAndroid = /Android/i.test(navigator.userAgent);
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isMobile = isIOS || isAndroid;
 let isARSupported = false;
 let currentModel = 'tower1';
+const modelUrls = {
+    'tower1': './assets/tower1.glb',
+    'tower2': './assets/tower2.glb',
+    'tower3': './assets/tower3.glb'
+};
+let currentModelUrl = modelUrls[currentModel];
 
-init();
+// Initialize the app
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+});
+
 async function init() {
-    setupTouchEvents();
+    setupIOSFix();
     setupEventListeners();
+    setupModelSelector();
 
-    isARSupported = await checkARSupport();
-    if (isIOS && !isARSupported) showQuickLook();
+    try {
+        isARSupported = await checkARSupport();
+        if (isIOS && !isARSupported) {
+            document.getElementById('ar-button').style.display = 'none';
+        }
+    } catch (e) {
+        console.error("AR initialization error:", e);
+        isARSupported = false;
+    }
 }
 
-function setupTouchEvents() {
-    const options = document.querySelectorAll('.tower-option, a[rel="ar"]');
-
-    options.forEach(option => {
+function setupEventListeners() {
+    // Tower selection
+    document.querySelectorAll('.tower-option').forEach(option => {
         option.addEventListener('click', handleSelection);
         option.addEventListener('touchend', handleSelection);
-
-        if (isIOS) {
-            option.style.cursor = 'pointer';
-            option.style.webkitTapHighlightColor = 'transparent';
-        }
     });
+
+    // Back buttons
+    document.getElementById('back-button').addEventListener('click', showMainMenu);
+    document.getElementById('quicklook-back').addEventListener('click', showMainMenu);
+
+    // Window resize with debounce
+    window.addEventListener('resize', debounce(onWindowResize, 100));
 }
 
 function handleSelection(e) {
     e.preventDefault();
-    if (this.classList.contains('tower-option')) {
-        currentModel = this.getAttribute('data-model');
-        loadModelViewer();
-    }
+    e.stopPropagation();
+    
+    // Visual feedback
+    this.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        this.style.transform = '';
+    }, 200);
+
+    currentModel = this.getAttribute('data-model');
+    currentModelUrl = modelUrls[currentModel];
+    loadModelViewer();
 }
 
 async function checkARSupport() {
-    if (!navigator.xr) return false;
-
+    if (!window.XRSession || !navigator.xr) return false;
+    
     try {
-        return await navigator.xr.isSessionSupported('immersive-ar');
+        const supported = await navigator.xr.isSessionSupported('immersive-ar');
+        console.log(`AR supported: ${supported}`);
+        return supported;
     } catch (e) {
         console.error("Error checking AR support:", e);
         return false;
     }
 }
 
-function showQuickLook() {
-    document.getElementById('ar-button').style.display = 'none';
-    document.getElementById('ar-quicklook').style.display = 'block';
-}
-
 function initWebXR() {
+    // Clean up any existing scenes
+    if (scene && renderer) {
+        document.body.removeChild(renderer.domElement);
+    }
+
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: "high-performance"
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.xr.enabled = true;
-    document.body.appendChild(renderer.domElement);
+    document.getElementById('viewer-page').appendChild(renderer.domElement);
 
-
-    document.getElementById('ar-button').addEventListener('click', async () => {
+    // AR Button
+    const arButton = document.getElementById('ar-button');
+    arButton.style.display = 'block';
+    arButton.addEventListener('click', async () => {
         try {
-            const button = ARButton.createButton(renderer, {
+            const sessionInit = { 
                 requiredFeatures: ['hit-test'],
                 optionalFeatures: ['dom-overlay'],
-                domOverlay: { root: document.body }
-            });
-            document.body.appendChild(button);
-            document.getElementById('ar-button').remove();
+                domOverlay: { root: document.getElementById('viewer-page') }
+            };
+            
+            const button = ARButton.createButton(renderer, sessionInit);
+            document.getElementById('viewer-page').appendChild(button);
+            arButton.style.display = 'none';
             showInfo("Arahkan kamera ke permukaan datar dan tap layar untuk menempatkan menara");
         } catch (error) {
             console.error("AR session failed:", error);
@@ -80,18 +118,35 @@ function initWebXR() {
         }
     });
 
-    loadModel().then(() => {
+    // Load model
+    loadModel().then(gltf => {
+        model = gltf.scene;
+        model.visible = false;
+        model.scale.set(0.5, 0.5, 0.5);
+        scene.add(model);
+
+        // Controller setup
         controller = renderer.xr.getController(0);
         controller.addEventListener('select', onSelect);
         scene.add(controller);
+    }).catch(error => {
+        console.error("Model loading failed:", error);
+        showInfo("Gagal memuat model. Beralih ke mode 3D...");
+        init3DFallback();
     });
 
-    window.addEventListener('resize', onWindowResize);
-
-    animate();
+    // Animation loop
+    renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+    });
 }
 
 function init3DFallback() {
+    // Clean up any existing fallback scenes
+    if (fallbackScene && fallbackRenderer) {
+        document.getElementById('fallback-container').removeChild(fallbackRenderer.domElement);
+    }
+
     document.getElementById('ar-button').style.display = 'none';
     document.getElementById('fallback-container').style.display = 'block';
     showInfo("Mode 3D - Gunakan mouse/touch untuk melihat menara dari berbagai sudut");
@@ -102,32 +157,51 @@ function init3DFallback() {
     fallbackCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     fallbackCamera.position.z = 3;
 
-    fallbackRenderer = new THREE.WebGLRenderer({ antialias: true });
+    fallbackRenderer = new THREE.WebGLRenderer({ 
+        antialias: true,
+        powerPreference: "high-performance"
+    });
+    fallbackRenderer.setPixelRatio(window.devicePixelRatio);
     fallbackRenderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('fallback-container').appendChild(fallbackRenderer.domElement);
 
+    // Lighting
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(1, 1, 1);
     fallbackScene.add(light);
     fallbackScene.add(new THREE.AmbientLight(0x404040));
 
+    // Load model
     loadModel().then(gltf => {
         model = gltf.scene;
         model.scale.set(0.5, 0.5, 0.5);
         fallbackScene.add(model);
 
+        // Orbit controls for desktop/mobile
         const controls = new THREE.OrbitControls(fallbackCamera, fallbackRenderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.25;
+        controls.screenSpacePanning = true;
+        
+        // Mobile touch adjustments
+        if (isMobile) {
+            controls.enablePan = false;
+            controls.touchAction = 'none';
+        }
 
+        // Animation loop
         function animateFallback() {
             requestAnimationFrame(animateFallback);
             controls.update();
             fallbackRenderer.render(fallbackScene, fallbackCamera);
         }
         animateFallback();
+    }).catch(error => {
+        console.error("Model loading failed:", error);
+        showInfo("Gagal memuat model 3D");
     });
 
+    // Window resize handler
     window.addEventListener('resize', () => {
         fallbackCamera.aspect = window.innerWidth / window.innerHeight;
         fallbackCamera.updateProjectionMatrix();
@@ -138,7 +212,8 @@ function init3DFallback() {
 function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
-        console.log("Loading model from:", currentModelUrl); // Debug
+        console.log("Loading model from:", currentModelUrl);
+        
         loader.load(
             currentModelUrl,
             (gltf) => {
@@ -148,7 +223,7 @@ function loadModel() {
             undefined,
             (error) => {
                 console.error("Failed to load model:", error);
-                showInfo("Gagal memuat model 3D: " + currentModelUrl); // Tunjukkan path yang error
+                showInfo(`Gagal memuat model: ${currentModel}`);
                 reject(error);
             }
         );
@@ -179,100 +254,115 @@ function onWindowResize() {
     }
 }
 
-function animate() {
-    renderer.setAnimationLoop(render);
-}
-
-function render() {
-    renderer.render(scene, camera);
-}
-
 function showInfo(message) {
     const infoBox = document.getElementById('info-box');
     infoBox.textContent = message;
     infoBox.style.display = 'block';
 
-    if (message) {
-        setTimeout(() => {
-            infoBox.style.display = 'none';
-        }, 5000);
-    }
+    setTimeout(() => {
+        infoBox.style.display = 'none';
+    }, 5000);
 }
 
 function setupModelSelector() {
     const selector = document.getElementById('tower-select');
-    selector.addEventListener('change', (e) => {
-        currentModelUrl = modelUrls[e.target.value];
+    if (selector) {
+        selector.addEventListener('change', (e) => {
+            currentModel = e.target.value;
+            currentModelUrl = modelUrls[currentModel];
+            reloadModel();
+        });
+    }
+}
 
-        if (model) {
-            if (isARSupported && scene) {
-                scene.remove(model);
-            } else if (fallbackScene) {
-                fallbackScene.remove(model);
-            }
-
-            loadModel().then(gltf => {
-                model = gltf.scene;
-                if (isARSupported) {
-                    model.visible = false;
-                    scene.add(model);
-                } else {
-                    model.scale.set(0.5, 0.5, 0.5);
-                    fallbackScene.add(model);
-                }
-            });
+function reloadModel() {
+    if (model) {
+        if (isARSupported && scene) {
+            scene.remove(model);
+        } else if (fallbackScene) {
+            fallbackScene.remove(model);
         }
-    });
+
+        loadModel().then(gltf => {
+            model = gltf.scene;
+            if (isARSupported) {
+                model.visible = false;
+                model.scale.set(0.5, 0.5, 0.5);
+                scene.add(model);
+            } else {
+                model.scale.set(0.5, 0.5, 0.5);
+                fallbackScene.add(model);
+            }
+        });
+    }
 }
 
 function showMainMenu() {
     document.querySelectorAll('.container-fluid').forEach(page => {
         page.classList.add('d-none');
-        page.classList.remove('active-page');
     });
     document.getElementById('main-menu').classList.remove('d-none');
-    document.getElementById('main-menu').classList.add('active-page');
-}
-
-function enableScroll() {
-    document.body.style.overflow = 'auto';
-    document.body.style.height = 'auto';
+    
+    // Clean up scenes
+    if (renderer) {
+        renderer.dispose();
+        if (renderer.domElement.parentNode) {
+            renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
+    }
+    
+    if (fallbackRenderer) {
+        fallbackRenderer.dispose();
+        if (fallbackRenderer.domElement.parentNode) {
+            fallbackRenderer.domElement.parentNode.removeChild(fallbackRenderer.domElement);
+        }
+    }
 }
 
 function loadModelViewer() {
     document.querySelectorAll('.container-fluid').forEach(page => {
         page.classList.add('d-none');
-        page.classList.remove('active-page');
     });
-
-    currentModelUrl = `./assets/${currentModel}.glb`;
+    document.getElementById('viewer-page').classList.remove('d-none');
 
     if (isIOS && !isARSupported) {
         document.getElementById('ar-quicklook').classList.remove('d-none');
     } else if (isARSupported) {
-        document.getElementById('viewer-page').classList.remove('d-none');
         initWebXR();
     } else {
-        document.getElementById('viewer-page').classList.remove('d-none');
         init3DFallback();
     }
-
-    enableScroll();
 }
 
-function setupEventListeners() {
-    [['back-button', showMainMenu],
-    ['quicklook-back', showMainMenu]].forEach(([id, handler]) => {
-        document.getElementById(id).addEventListener('click', handler);
+function setupIOSFix() {
+    if (!isIOS) return;
+    
+    document.body.classList.add('ios-device');
+    
+    // Prevent default touch behaviors
+    document.addEventListener('touchmove', (e) => {
+        if (e.target.classList.contains('tower-option')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    // Better touch feedback
+    document.querySelectorAll('.tower-option').forEach(el => {
+        el.addEventListener('touchstart', () => {
+            el.style.opacity = '0.8';
+        }, { passive: true });
+        
+        el.addEventListener('touchend', () => {
+            el.style.opacity = '1';
+        }, { passive: true });
     });
-
-    window.addEventListener('resize', debounce(onWindowResize, 100));
 }
 
 function debounce(func, wait) {
     let timeout;
-    return function () {
+    return function() {
+        const context = this, args = arguments;
         clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, arguments), wait);
+        timeout = setTimeout(() => func.apply(context, args), wait);
     };
 }

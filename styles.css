@@ -1,11 +1,16 @@
+/* Base Styles */
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+    overscroll-behavior-y: contain;
 }
 
+/* Page Layout */
 .page {
     height: 100%;
     min-height: 100vh;
@@ -17,9 +22,24 @@ body {
     display: flex !important;
 }
 
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Card Styles */
 .tower-option {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    min-height: 120px;
+    min-width: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: white;
 }
 
 .tower-option:hover {
@@ -27,90 +47,220 @@ body {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
-#ar-button {
-    z-index: 1000;
+.tower-option:active {
+    transform: scale(0.98);
+    opacity: 0.9;
 }
 
+.card-img-top {
+    object-fit: contain;
+    height: 200px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+    padding: 1rem;
+    text-align: center;
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 0;
+    color: #333;
+}
+
+/* AR Button Styles */
+#ar-button {
+    z-index: 1000;
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateZ(0);
+}
+
+#back-button, #quicklook-back {
+    z-index: 1000;
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 50px;
+    transform: translateZ(0);
+}
+
+/* Info Box */
 #info-box {
     backdrop-filter: blur(5px);
     background-color: rgba(0, 0, 0, 0.7) !important;
     border: none;
     color: white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    transform: translateZ(0);
+}
+
+/* Viewer Pages */
+#viewer-page, #fallback-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f0f0f0;
 }
 
 #fallback-container {
     z-index: 500;
 }
 
-.card-img-top {
-    object-fit: contain;
-    height: 200px;
+/* Canvas Styles */
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
 }
 
+/* Typography */
+h1.display-4 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+h2 {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* iOS Specific Styles */
+@supports (-webkit-touch-callout: none) {
+    body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+                env(safe-area-inset-bottom) env(safe-area-inset-left);
+        height: 100vh;
+        height: -webkit-fill-available;
+    }
+    
+    .container-fluid {
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+    }
+    
+    .tower-option, a[rel="ar"] {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+    
+    #viewer-page, #fallback-container {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+/* Mobile Touch Optimizations */
+@media (hover: none) {
+    .tower-option:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .tower-option:active {
+        transform: scale(0.96);
+        opacity: 0.9;
+    }
+    
+    .card-img-top {
+        height: 150px;
+    }
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
     .card-img-top {
         height: 150px;
     }
-
+    
     h1.display-4 {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
     }
-}
-
-@supports (-webkit-touch-callout: none) {
-    .page {
-        height: -webkit-fill-available;
-    }
-}
-
-#main-menu,
-#viewer-page,
-#ar-quicklook {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Tambahkan CSS khusus untuk touch devices */
-@media (hover: none) {
-    .tower-option:hover {
-        transform: none;
-        box-shadow: none !important;
-    }
-
-    .tower-option:active {
-        transform: scale(0.98);
-        opacity: 0.9;
-    }
-}
-
-/* Perbaikan viewport iOS */
-@supports (-webkit-touch-callout: none) {
-    body {
-        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    }
-
+    
     .container-fluid {
-        padding-left: max(20px, env(safe-area-inset-left));
-        padding-right: max(20px, env(safe-area-inset-right));
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    #info-box {
+        max-width: 90% !important;
+        margin: 10px !important;
+        font-size: 13px;
     }
 }
 
-/* Optimasi card untuk touch */
-.tower-option {
-    min-height: 120px;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    user-select: none;
+@media (max-width: 576px) {
+    h1.display-4 {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-img-top {
+        height: 120px;
+    }
+    
+    .tower-option {
+        min-height: 100px;
+    }
 }
 
-/* Perbaikan scroll untuk iOS */
-html {
-    overflow: hidden;
-    height: 100%;
+/* Performance Optimizations */
+#fallback-container, #viewer-page {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    backface-visibility: hidden;
+    perspective: 1000;
+    will-change: transform;
 }
 
-body {
-    overflow: auto;
-    height: 100%;
-    overscroll-behavior-y: contain;
+/* Button Hover Effects */
+.btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:active {
+    transform: scale(0.96);
+}
+
+/* Quick Look Page Styles */
+#ar-quicklook .card {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+#ar-quicklook a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Scrollbar Styles (for non-iOS devices) */
+@media not (-webkit-touch-callout: none) {
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
 }
