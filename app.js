@@ -34,32 +34,25 @@ async function init() {
         console.error("Gagal mengecek dukungan AR:", e);
         isARSupported = false;
     }
-    
-    // Sembunyikan tombol AR jika tidak didukung (kecuali di iOS dengan Quick Look)
+
     if (!isARSupported && !isIOS) {
         const arButton = document.getElementById('ar-button');
-        if(arButton) arButton.style.display = 'none';
+        if (arButton) arButton.style.display = 'none';
     }
 }
 
 // -- PENGATURAN EVENT LISTENER -- //
 function setupEventListeners() {
-    // Pemilihan tower
     document.querySelectorAll('.tower-option').forEach(option => {
         option.addEventListener('click', handleSelection);
     });
-
-    // Tombol kembali utama (ada di semua halaman)
     document.getElementById('back-button').addEventListener('click', showMainMenu);
 
-    // Tombol kembali untuk Quick Look (hanya ada di halaman iOS)
     const quicklookBackButton = document.getElementById('quicklook-back');
     if (quicklookBackButton) {
-        // Kode ini hanya akan berjalan jika elemen 'quicklook-back' ditemukan
         quicklookBackButton.addEventListener('click', showMainMenu);
     }
 
-    // Resize window dengan debounce
     window.addEventListener('resize', debounce(onWindowResize, 150));
 }
 
@@ -71,13 +64,13 @@ function setupEventListeners() {
  */
 function handleSelection(e) {
     e.preventDefault();
-    
+
     const selectedModel = this.getAttribute('data-model');
     if (!selectedModel) return;
 
     currentModel = selectedModel;
     currentModelUrl = modelUrls[currentModel].glb;
-    
+
     // Memberikan umpan balik visual saat item dipilih
     this.style.transform = 'scale(0.95)';
     setTimeout(() => {
@@ -90,23 +83,45 @@ function handleSelection(e) {
 /**
  * Memuat viewer berdasarkan jenis perangkat dan dukungan AR.
  */
+// app.js
 function loadModelViewer() {
-    // Sembunyikan menu utama dan tampilkan halaman viewer
-    document.getElementById('main-menu').classList.add('d-none');
-    document.getElementById('viewer-page').classList.remove('d-none');
+    document.getElementById('main-menu').classList.add('d-none'); // Hide main menu
 
-    // iOS menggunakan AR Quick Look jika WebXR tidak didukung
     if (isIOS) {
+        // Ensure ar-quicklook is visible and viewer-page is hidden for iOS
+        document.getElementById('ar-quicklook').classList.remove('d-none');
+        document.getElementById('viewer-page').classList.add('d-none'); // Ensure viewer-page is hidden if it was shown
+
         const arQuickLookPage = document.getElementById('ar-quicklook');
-        const modelLink = arQuickLookPage.querySelector(`a[href*="${currentModel}"]`);
+        // Find the correct USDZ link based on the selected model
+        // The modelUrls object is not directly used here for USDZ, need to adapt.
+        // Assuming currentModel will be like 'tower1', 'tower2', 'tower3'
+        // and the href in index-ios.html matches 'assets/tower1.usdz', 'assets/tower4.usdz', 'assets/tower3.usdz'
+        // There's a mismatch in tower2's USDZ path in index-ios.html ('assets/tower4.usdz')
+        // vs modelUrls in app.js ('./assets/tower5.usdz'). This should be corrected for proper functionality.
+        let usdzPath;
+        if (currentModel === 'tower1') {
+            usdzPath = 'assets/tower1.usdz';
+        } else if (currentModel === 'tower2') {
+            usdzPath = 'assets/tower4.usdz'; // Corrected based on index-ios.html
+        } else if (currentModel === 'tower3') {
+            usdzPath = 'assets/tower3.usdz';
+        }
+
+        const modelLink = arQuickLookPage.querySelector(`a[href*="${usdzPath}"]`);
+
         if (modelLink) {
-             // Secara otomatis "mengklik" link untuk membuka Quick Look
             modelLink.click();
         }
-        init3DFallback(); // Siapkan fallback jika Quick Look gagal atau ditutup
+        // No need to call init3DFallback immediately for iOS Quick Look, 
+        // as Quick Look takes over. Fallback would only be if Quick Look fails.
+        // If you want a 3D fallback *after* Quick Look is dismissed or fails,
+        // you'd need a different trigger.
     } else if (isARSupported) {
+        document.getElementById('viewer-page').classList.remove('d-none'); // Show viewer page for WebXR
         initWebXR();
     } else {
+        document.getElementById('viewer-page').classList.remove('d-none'); // Show viewer page for 3D fallback
         init3DFallback();
     }
 }
@@ -138,14 +153,14 @@ function initWebXR() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.xr.enabled = true;
-    
+
     document.getElementById('viewer-page').appendChild(renderer.domElement);
 
     // Tambahkan tombol AR
     const arButton = document.getElementById('ar-button');
-    if(arButton) arButton.style.display = 'block';
+    if (arButton) arButton.style.display = 'block';
 
-    const sessionInit = { 
+    const sessionInit = {
         requiredFeatures: ['hit-test'],
         optionalFeatures: ['dom-overlay'],
         domOverlay: { root: document.getElementById('viewer-page') }
@@ -156,7 +171,7 @@ function initWebXR() {
     controller = renderer.xr.getController(0);
     controller.addEventListener('select', onSelect);
     scene.add(controller);
-    
+
     // Muat model 3D
     loadModel().then(gltf => {
         model = gltf.scene;
@@ -172,14 +187,14 @@ function initWebXR() {
  */
 function init3DFallback() {
     cleanupRenderers();
-    
+
     const fallbackContainer = document.getElementById('fallback-container');
     fallbackContainer.style.display = 'block';
 
     // Sembunyikan tombol AR jika ada
     const arButton = document.getElementById('ar-button');
-    if(arButton) arButton.style.display = 'none';
-    
+    if (arButton) arButton.style.display = 'none';
+
     showInfo("Mode 3D - Gunakan gestur untuk memutar model.");
 
     fallbackScene = new THREE.Scene();
@@ -191,7 +206,7 @@ function init3DFallback() {
     fallbackRenderer.setPixelRatio(window.devicePixelRatio);
     fallbackRenderer.setSize(window.innerWidth, window.innerHeight);
     fallbackContainer.appendChild(fallbackRenderer.domElement);
-    
+
     // Tambahkan pencahayaan
     fallbackScene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -204,7 +219,7 @@ function init3DFallback() {
     controls.minDistance = 2;
     controls.maxDistance = 10;
     controls.target.set(0, 1, 0);
-    
+
     // Muat model
     loadModel().then(gltf => {
         model = gltf.scene;
@@ -227,7 +242,7 @@ function init3DFallback() {
 function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
-        loader.load(currentModelUrl, 
+        loader.load(currentModelUrl,
             gltf => {
                 console.log("Model berhasil dimuat:", currentModel);
                 // Atur skala dan posisi model
@@ -235,8 +250,8 @@ function loadModel() {
                 const center = box.getCenter(new THREE.Vector3());
                 gltf.scene.position.sub(center); // Pusatkan model
                 resolve(gltf);
-            }, 
-            undefined, 
+            },
+            undefined,
             error => {
                 console.error("Gagal memuat model:", error);
                 showInfo(`Gagal memuat model ${currentModel}`);
@@ -307,12 +322,12 @@ function showInfo(message) {
 function showMainMenu() {
     document.getElementById('viewer-page').classList.add('d-none');
     document.getElementById('main-menu').classList.remove('d-none');
-    
+
     const arQuickLookPage = document.getElementById('ar-quicklook');
     if (arQuickLookPage) {
         arQuickLookPage.classList.add('d-none');
     }
-    
+
     cleanupRenderers();
 }
 
@@ -344,7 +359,7 @@ function cleanupRenderers() {
  */
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
