@@ -1,77 +1,88 @@
 // app.js
 
-// -- VARIABEL GLOBAL -- //
+// -- GLOBAL VARIABLES -- //
 let camera, scene, renderer, controller, model;
 let fallbackScene, fallbackCamera, fallbackRenderer;
 
-// Deteksi jenis perangkat
+// Device detection
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const isAndroid = /Android/i.test(navigator.userAgent);
-const isMobile = isIOS || isAndroid;
+const isMobile = isIOS || isAndroid; // Simplified for clarity
 
 let isARSupported = false;
 let currentModel = 'tower1';
 
-// URL model 3D
+// 3D model URLs - standardized for consistency
 const modelUrls = {
-    'tower1': { glb: './assets/tower4.glb', usdz: './assets/tower4.usdz' },
-    'tower2': { glb: './assets/tower5.glb', usdz: './assets/tower5.usdz' },
+    'tower1': { glb: './assets/tower4.glb', usdz: './assets/tower1.usdz' }, // Ensure tower1.usdz exists
+    'tower2': { glb: './assets/tower5.glb', usdz: './assets/tower2.usdz' }, // Ensure tower2.usdz exists (previously tower4.usdz in HTML)
     'tower3': { glb: './assets/tower3.glb', usdz: './assets/tower3.usdz' }
 };
-let currentModelUrl = modelUrls[currentModel].glb;
+let currentModelUrl = modelUrls[currentModel].glb; // Default to GLB
 
-// -- INISIALISASI APLIKASI -- //
+// -- APPLICATION INITIALIZATION -- //
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
     setupEventListeners();
 
-    // Cek dukungan AR
+    // Check AR support
     try {
         isARSupported = await checkARSupport();
         console.log("AR Supported:", isARSupported);
     } catch (e) {
-        console.error("Gagal mengecek dukungan AR:", e);
+        console.error("Failed to check AR support:", e);
         isARSupported = false;
     }
-
+    
+    // Hide AR button if AR is not supported and not iOS (iOS handles AR via Quick Look)
     if (!isARSupported && !isIOS) {
         const arButton = document.getElementById('ar-button');
-        if (arButton) arButton.style.display = 'none';
+        if(arButton) arButton.style.display = 'none';
     }
 }
 
-// -- PENGATURAN EVENT LISTENER -- //
+// -- EVENT LISTENER SETUP -- //
 function setupEventListeners() {
+    // Attach click listeners to all tower option cards
     document.querySelectorAll('.tower-option').forEach(option => {
         option.addEventListener('click', handleSelection);
     });
-    document.getElementById('back-button').addEventListener('click', showMainMenu);
 
+    // Attach click listener to the main back button (for Android/Desktop viewer page)
+    const backButton = document.getElementById('back-button');
+    if (backButton) {
+        backButton.addEventListener('click', showMainMenu);
+    }
+    
+    // Attach click listener to the Quick Look back button (for iOS Quick Look page)
     const quicklookBackButton = document.getElementById('quicklook-back');
     if (quicklookBackButton) {
         quicklookBackButton.addEventListener('click', showMainMenu);
     }
 
+    // Debounce window resize events for performance
     window.addEventListener('resize', debounce(onWindowResize, 150));
 }
 
 
-// -- FUNGSI UTAMA -- //
+// -- MAIN FUNCTIONS -- //
 
 /**
- * Menangani pemilihan model tower oleh pengguna.
+ * Handles the selection of a tower model by the user.
+ * Transitions to the appropriate viewer based on device and AR support.
  */
 function handleSelection(e) {
-    e.preventDefault();
-
+    e.preventDefault(); // Prevent default link behavior if applicable
+    
     const selectedModel = this.getAttribute('data-model');
     if (!selectedModel) return;
 
     currentModel = selectedModel;
-    currentModelUrl = modelUrls[currentModel].glb;
-
-    // Memberikan umpan balik visual saat item dipilih
+    // Update currentModelUrl based on GLB for Three.js fallback
+    currentModelUrl = modelUrls[currentModel].glb; 
+    
+    // Provide visual feedback for selection
     this.style.transform = 'scale(0.95)';
     setTimeout(() => {
         this.style.transform = '';
@@ -81,53 +92,61 @@ function handleSelection(e) {
 }
 
 /**
- * Memuat viewer berdasarkan jenis perangkat dan dukungan AR.
+ * Loads the appropriate viewer (AR Quick Look, WebXR, or 3D Fallback)
+ * based on device type and AR support.
  */
-// app.js
 function loadModelViewer() {
-    document.getElementById('main-menu').classList.add('d-none'); // Hide main menu
+    // Always hide the main menu first
+    document.getElementById('main-menu').classList.add('d-none');
 
     if (isIOS) {
-        // Ensure ar-quicklook is visible and viewer-page is hidden for iOS
-        document.getElementById('ar-quicklook').classList.remove('d-none');
-        document.getElementById('viewer-page').classList.add('d-none'); // Ensure viewer-page is hidden if it was shown
-
+        // For iOS, show the AR Quick Look page and hide the general viewer page
         const arQuickLookPage = document.getElementById('ar-quicklook');
-        // Find the correct USDZ link based on the selected model
-        // The modelUrls object is not directly used here for USDZ, need to adapt.
-        // Assuming currentModel will be like 'tower1', 'tower2', 'tower3'
-        // and the href in index-ios.html matches 'assets/tower1.usdz', 'assets/tower4.usdz', 'assets/tower3.usdz'
-        // There's a mismatch in tower2's USDZ path in index-ios.html ('assets/tower4.usdz')
-        // vs modelUrls in app.js ('./assets/tower5.usdz'). This should be corrected for proper functionality.
-        let usdzPath;
-        if (currentModel === 'tower1') {
-            usdzPath = 'assets/tower1.usdz';
-        } else if (currentModel === 'tower2') {
-            usdzPath = 'assets/tower4.usdz'; // Corrected based on index-ios.html
-        } else if (currentModel === 'tower3') {
-            usdzPath = 'assets/tower3.usdz';
+        const viewerPage = document.getElementById('viewer-page');
+
+        if (arQuickLookPage) {
+            arQuickLookPage.classList.remove('d-none');
+        }
+        if (viewerPage) {
+            viewerPage.classList.add('d-none'); // Ensure viewer-page is hidden if it was visible
         }
 
-        const modelLink = arQuickLookPage.querySelector(`a[href*="${usdzPath}"]`);
-
-        if (modelLink) {
-            modelLink.click();
+        // Get the USDZ path for the current model
+        const usdzPath = modelUrls[currentModel].usdz;
+        
+        if (arQuickLookPage) {
+            // Find the <a> tag with rel="ar" and the corresponding usdz path
+            const modelLink = arQuickLookPage.querySelector(`a[href*="${usdzPath}"]`);
+            if (modelLink) {
+                // Simulate a click on the Quick Look link
+                modelLink.click();
+            } else {
+                console.warn(`Quick Look link for model ${currentModel} (${usdzPath}) not found. Falling back to 3D.`);
+                // If the specific Quick Look link isn't found, fall back to 3D viewer
+                if (arQuickLookPage) arQuickLookPage.classList.add('d-none'); // Hide Quick Look page
+                if (viewerPage) viewerPage.classList.remove('d-none'); // Show viewer page
+                init3DFallback();
+            }
+        } else {
+            console.error("AR Quick Look page (ar-quicklook) not found. Falling back to 3D.");
+            // If ar-quicklook container itself is missing, fall back to 3D
+            if (viewerPage) viewerPage.classList.remove('d-none');
+            init3DFallback();
         }
-        // No need to call init3DFallback immediately for iOS Quick Look, 
-        // as Quick Look takes over. Fallback would only be if Quick Look fails.
-        // If you want a 3D fallback *after* Quick Look is dismissed or fails,
-        // you'd need a different trigger.
+
     } else if (isARSupported) {
-        document.getElementById('viewer-page').classList.remove('d-none'); // Show viewer page for WebXR
+        // For Android/Desktop with WebXR support
+        document.getElementById('viewer-page').classList.remove('d-none');
         initWebXR();
     } else {
-        document.getElementById('viewer-page').classList.remove('d-none'); // Show viewer page for 3D fallback
+        // For Android/Desktop without WebXR or any other non-iOS device
+        document.getElementById('viewer-page').classList.remove('d-none');
         init3DFallback();
     }
 }
 
 /**
- * Mengecek apakah sesi 'immersive-ar' didukung oleh browser.
+ * Checks if the browser supports 'immersive-ar' WebXR session.
  * @returns {Promise<boolean>}
  */
 async function checkARSupport() {
@@ -135,16 +154,17 @@ async function checkARSupport() {
     try {
         return await navigator.xr.isSessionSupported('immersive-ar');
     } catch (e) {
-        console.error("Error saat mengecek sesi AR:", e);
+        console.error("Error checking AR session:", e);
         return false;
     }
 }
 
 /**
- * Inisialisasi sesi WebXR untuk pengalaman AR.
+ * Initializes the WebXR session for AR experience.
+ * This is primarily for Android devices supporting WebXR.
  */
 function initWebXR() {
-    cleanupRenderers();
+    cleanupRenderers(); // Clean up any existing Three.js renderers
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 40);
@@ -152,108 +172,153 @@ function initWebXR() {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
+    renderer.xr.enabled = true; // Enable WebXR on the renderer
+    
+    // Append the renderer's DOM element to the viewer page
+    const viewerPage = document.getElementById('viewer-page');
+    if (viewerPage) {
+        viewerPage.appendChild(renderer.domElement);
+    } else {
+        console.error("Viewer page element not found for WebXR setup.");
+        return;
+    }
 
-    document.getElementById('viewer-page').appendChild(renderer.domElement);
-
-    // Tambahkan tombol AR
+    // Show the AR button if it exists
     const arButton = document.getElementById('ar-button');
-    if (arButton) arButton.style.display = 'block';
+    if(arButton) arButton.style.display = 'block';
 
-    const sessionInit = {
+    const sessionInit = { 
         requiredFeatures: ['hit-test'],
         optionalFeatures: ['dom-overlay'],
         domOverlay: { root: document.getElementById('viewer-page') }
     };
-    document.body.appendChild(ARButton.createButton(renderer, sessionInit));
+    // Create and append the AR Button (from Three.js ARButton.js)
+    if (typeof ARButton !== 'undefined') {
+        const arButtonElement = ARButton.createButton(renderer, sessionInit);
+        // Ensure the button is added to a place accessible within the viewer-page
+        // Or consider putting it outside and just managing its visibility.
+        // For now, let's assume the HTML already has a place for ARButton.
+        // The existing 'ar-button' in HTML should be used instead of ARButton.createButton,
+        // which typically creates a new button. If ARButton.js provides a way to attach, use that.
+        // For simplicity, we'll let ARButton.createButton add its own button.
+        // The existing 'ar-button' element can then be removed or hidden.
+        if (viewerPage) viewerPage.appendChild(arButtonElement);
+        if (arButton) arButton.style.display = 'none'; // Hide the original button if ARButton.js adds its own
+    } else {
+        console.warn("ARButton.js not loaded or available.");
+    }
 
-    // Atur controller untuk interaksi
+
+    // Set up controller for interaction in AR
     controller = renderer.xr.getController(0);
-    controller.addEventListener('select', onSelect);
+    controller.addEventListener('select', onSelect); // Listen for 'select' (e.g., tap) to place model
     scene.add(controller);
-
-    // Muat model 3D
+    
+    // Load the 3D model
     loadModel().then(gltf => {
         model = gltf.scene;
-        model.visible = false; // Sembunyikan model sampai ditempatkan
+        model.visible = false; // Hide model until placed in AR
         scene.add(model);
-    }).catch(init3DFallback);
+    }).catch(init3DFallback); // Fallback to 3D if model loading fails
 
+    // Start the animation loop for WebXR
     renderer.setAnimationLoop(() => renderer.render(scene, camera));
 }
 
 /**
- * Inisialisasi mode fallback 3D jika AR tidak tersedia.
+ * Initializes the 3D fallback mode if AR is not available or fails.
+ * This is used for Desktop and Android devices without WebXR, and as a fallback for iOS.
  */
 function init3DFallback() {
-    cleanupRenderers();
+    cleanupRenderers(); // Clean up existing renderers
 
+    // Ensure fallback container is visible
     const fallbackContainer = document.getElementById('fallback-container');
-    fallbackContainer.style.display = 'block';
+    if (fallbackContainer) {
+        fallbackContainer.classList.remove('d-none'); // Ensure it's not d-none
+        fallbackContainer.style.display = 'block'; // Make sure display is block
+    } else {
+        console.error("Fallback container element not found.");
+        return;
+    }
 
-    // Sembunyikan tombol AR jika ada
+    // Hide the AR button if it exists and we're in fallback mode
     const arButton = document.getElementById('ar-button');
-    if (arButton) arButton.style.display = 'none';
-
+    if(arButton) arButton.style.display = 'none';
+    
     showInfo("Mode 3D - Gunakan gestur untuk memutar model.");
 
     fallbackScene = new THREE.Scene();
-    fallbackScene.background = new THREE.Color(0xE0E0E0);
+    fallbackScene.background = new THREE.Color(0xE0E0E0); // Light grey background
     fallbackCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    fallbackCamera.position.set(0, 1.5, 5);
+    fallbackCamera.position.set(0, 1.5, 5); // Position camera
 
     fallbackRenderer = new THREE.WebGLRenderer({ antialias: true });
     fallbackRenderer.setPixelRatio(window.devicePixelRatio);
     fallbackRenderer.setSize(window.innerWidth, window.innerHeight);
-    fallbackContainer.appendChild(fallbackRenderer.domElement);
+    
+    if (fallbackContainer) {
+        fallbackContainer.appendChild(fallbackRenderer.domElement);
+    }
 
-    // Tambahkan pencahayaan
-    fallbackScene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1));
+    // Add lighting to the scene
+    fallbackScene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1)); // Soft ambient light
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(1, 1, 1);
+    directionalLight.position.set(1, 1, 1); // Directional light from top-front-right
     fallbackScene.add(directionalLight);
 
-    // Kontrol orbit
+    // Orbit controls for 3D interaction
     const controls = new THREE.OrbitControls(fallbackCamera, fallbackRenderer.domElement);
-    controls.enableDamping = true;
-    controls.minDistance = 2;
-    controls.maxDistance = 10;
-    controls.target.set(0, 1, 0);
+    controls.enableDamping = true; // Enable smooth camera movement
+    controls.minDistance = 2; // Closest zoom
+    controls.maxDistance = 10; // Furthest zoom
+    controls.target.set(0, 1, 0); // Focus point of the orbit
 
-    // Muat model
+    // Load the 3D model
     loadModel().then(gltf => {
         model = gltf.scene;
         fallbackScene.add(model);
+    }).catch(error => {
+        console.error("Failed to load model for 3D fallback:", error);
+        showInfo("Gagal memuat model untuk tampilan 3D.");
     });
 
-    // Loop animasi
+    // Animation loop for fallback mode
     const animateFallback = () => {
         requestAnimationFrame(animateFallback);
-        controls.update();
-        fallbackRenderer.render(fallbackScene, fallbackCamera);
+        controls.update(); // Update controls in each frame
+        fallbackRenderer.render(fallbackScene, fallbackCamera); // Render the scene
     };
     animateFallback();
 }
 
 /**
- * Memuat model GLB menggunakan GLTFLoader.
- * @returns {Promise<Object>}
+ * Loads a GLB model using GLTFLoader.
+ * @returns {Promise<Object>} A promise that resolves with the loaded GLTF scene.
  */
 function loadModel() {
     return new Promise((resolve, reject) => {
         const loader = new THREE.GLTFLoader();
-        loader.load(currentModelUrl,
+        loader.load(currentModelUrl, 
             gltf => {
-                console.log("Model berhasil dimuat:", currentModel);
-                // Atur skala dan posisi model
+                console.log("Model successfully loaded:", currentModel);
+                // Adjust model scale and position to fit the view
                 const box = new THREE.Box3().setFromObject(gltf.scene);
                 const center = box.getCenter(new THREE.Vector3());
-                gltf.scene.position.sub(center); // Pusatkan model
+                gltf.scene.position.sub(center); // Center the model
+                
+                // Scale the model if it's too large/small for the scene
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const desiredSize = 2; // Adjust as needed
+                const scale = desiredSize / maxDim;
+                gltf.scene.scale.set(scale, scale, scale);
+
                 resolve(gltf);
-            },
-            undefined,
+            }, 
+            undefined, // Progress callback (optional)
             error => {
-                console.error("Gagal memuat model:", error);
+                console.error("Failed to load model:", error);
                 showInfo(`Gagal memuat model ${currentModel}`);
                 reject(error);
             }
@@ -262,29 +327,32 @@ function loadModel() {
 }
 
 /**
- * Menempatkan model di dunia AR saat pengguna mengetuk layar.
+ * Places the model in the AR world when the user taps the screen.
+ * This function needs more advanced WebXR hit-test implementation for precise placement.
  */
 function onSelect() {
     if (model) {
-        // Logika penempatan model (sesuaikan jika perlu)
-        const hitTestSource = null; // Ini perlu diimplementasikan dengan hit-test
-        if (hitTestSource) {
-            // Implementasi penempatan berdasarkan hit-test
-        } else {
-            // Penempatan sederhana di depan kamera
+        // Placeholder for AR model placement logic.
+        // In a real WebXR app, this would involve hit-testing to place the model
+        // on a detected surface. For this example, we'll place it simply.
+        // const hitTestSource = null; // This needs to be implemented with hit-test logic from XR session
+        // if (hitTestSource) {
+        //     // Placement implementation based on hit-test
+        // } else {
+            // Simple placement in front of the camera (adjust distance as needed)
             model.position.set(0, 0, -2).applyMatrix4(controller.matrixWorld);
             model.quaternion.setFromRotationMatrix(controller.matrixWorld);
-        }
-        model.visible = true;
+        // }
+        model.visible = true; // Make model visible once placed
         showInfo("Menara ditempatkan. Anda bisa bergerak di sekitarnya.");
     }
 }
 
 
-// -- FUNGSI UTILITAS -- //
+// -- UTILITY FUNCTIONS -- //
 
 /**
- * Menyesuaikan ukuran renderer saat jendela diubah ukurannya.
+ * Adjusts the renderer size when the window is resized.
  */
 function onWindowResize() {
     const width = window.innerWidth;
@@ -304,62 +372,69 @@ function onWindowResize() {
 }
 
 /**
- * Menampilkan pesan informasi sementara kepada pengguna.
- * @param {string} message - Pesan yang akan ditampilkan.
+ * Displays a temporary information message to the user.
+ * @param {string} message - The message to display.
  */
 function showInfo(message) {
     const infoBox = document.getElementById('info-box');
-    infoBox.textContent = message;
-    infoBox.style.display = 'block';
-    setTimeout(() => {
-        infoBox.style.display = 'none';
-    }, 4000);
+    if (infoBox) { // Ensure infoBox exists before trying to manipulate it
+        infoBox.textContent = message;
+        infoBox.style.display = 'block';
+        setTimeout(() => {
+            infoBox.style.display = 'none';
+        }, 4000);
+    } else {
+        console.warn("Info box element not found.");
+    }
 }
 
 /**
- * Kembali ke menu utama dan membersihkan scene.
+ * Returns to the main menu and cleans up the scene.
  */
 function showMainMenu() {
+    // Hide all viewer-related pages
     document.getElementById('viewer-page').classList.add('d-none');
-    document.getElementById('main-menu').classList.remove('d-none');
-
     const arQuickLookPage = document.getElementById('ar-quicklook');
     if (arQuickLookPage) {
         arQuickLookPage.classList.add('d-none');
     }
-
-    cleanupRenderers();
+    
+    // Show the main menu
+    document.getElementById('main-menu').classList.remove('d-none');
+    
+    cleanupRenderers(); // Clean up any active renderers
 }
 
 /**
- * Membersihkan renderer dan DOM elemen terkait.
+ * Disposes of Three.js renderers and removes their DOM elements.
  */
 function cleanupRenderers() {
     if (renderer) {
-        renderer.dispose();
+        renderer.dispose(); // Release GPU resources
         if (renderer.domElement.parentNode) {
             renderer.domElement.parentNode.removeChild(renderer.domElement);
         }
-        renderer = null;
+        renderer = null; // Clear reference
     }
     if (fallbackRenderer) {
-        fallbackRenderer.dispose();
+        fallbackRenderer.dispose(); // Release GPU resources
         if (fallbackRenderer.domElement.parentNode) {
             fallbackRenderer.domElement.parentNode.removeChild(fallbackRenderer.domElement);
         }
-        fallbackRenderer = null;
+        fallbackRenderer = null; // Clear reference
     }
 }
 
 /**
- * Fungsi debounce untuk menunda eksekusi fungsi.
- * @param {Function} func - Fungsi yang akan di-debounce.
- * @param {number} wait - Waktu tunda dalam milidetik.
- * @returns {Function}
+ * Debounce function to delay function execution.
+ * Useful for events like window resizing to prevent excessive calls.
+ * @param {Function} func - The function to debounce.
+ * @param {number} wait - The delay in milliseconds.
+ * @returns {Function} The debounced function.
  */
 function debounce(func, wait) {
     let timeout;
-    return function (...args) {
+    return function(...args) {
         const context = this;
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);

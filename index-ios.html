@@ -19,7 +19,7 @@
                 <h1 class="display-4 fw-bold">Pilih Jenis Tower</h1>
             </div>
 
-<!--            <div class="col-md-8 col-lg-6">
+            <div class="col-md-8 col-lg-6">
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="card tower-option h-100" data-model="tower1">
@@ -50,20 +50,7 @@
                 </div>
             </div>
         </div>
-    </div>-->
-
-    <!-- iOS Quick Look Page
-    <div id="viewer-page" class="container-fluid vh-100 position-relative d-none">
-        <div id="info-box" class="alert alert-dark position-absolute top-0 start-0 m-3 d-none" style="max-width: 300px; z-index: 1000;">
-            Informasi akan muncul di sini
-        </div>
-
-        <div id="fallback-container" class="position-absolute top-0 start-0 w-100 h-100 d-none"></div>
-
-        <button id="back-button" class="btn btn-secondary position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            Kembali
-        </button>
-    </div>-->
+    </div>
 
     <!-- iOS Quick Look Page -->
     <div id="ar-quicklook" class="container-fluid vh-100 d-flex flex-column justify-content-center d-none">
@@ -85,7 +72,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <a href="assets/tower4.usdz" rel="ar" class="text-decoration-none">
+                        <a href="assets/tower2.usdz" rel="ar" class="text-decoration-none"> <!-- Corrected USDZ path -->
                             <div class="card h-100 tower-option">
                                 <img src="assets/tower2.png" class="card-img-top p-3" alt="Pole Tower" loading="lazy">
                                 <div class="card-body">
@@ -112,6 +99,19 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- 3D Viewer Page (Fallback for iOS) -->
+    <div id="viewer-page" class="container-fluid vh-100 position-relative d-none">
+        <div id="info-box" class="alert alert-dark position-absolute top-0 start-0 m-3 d-none" style="max-width: 300px; z-index: 1000;">
+            Informasi akan muncul di sini
+        </div>
+
+        <div id="fallback-container" class="position-absolute top-0 start-0 w-100 h-100 d-none"></div>
+
+        <button id="back-button" class="btn btn-secondary position-absolute bottom-0 start-50 translate-middle-x mb-3">
+            Kembali
+        </button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
