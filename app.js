@@ -49,13 +49,16 @@ function setupEventListeners() {
         option.addEventListener('click', handleSelection);
     });
 
-    // Tombol kembali
+    // Tombol kembali utama (ada di semua halaman)
     document.getElementById('back-button').addEventListener('click', showMainMenu);
-    const quicklookBack = document.getElementById('quicklook-back');
-    if (quicklookBack) {
-        quicklookBack.addEventListener('click', showMainMenu);
+
+    // Tombol kembali untuk Quick Look (hanya ada di halaman iOS)
+    const quicklookBackButton = document.getElementById('quicklook-back');
+    if (quicklookBackButton) {
+        // Kode ini hanya akan berjalan jika elemen 'quicklook-back' ditemukan
+        quicklookBackButton.addEventListener('click', showMainMenu);
     }
-    
+
     // Resize window dengan debounce
     window.addEventListener('resize', debounce(onWindowResize, 150));
 }
