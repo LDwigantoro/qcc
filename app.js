@@ -222,6 +222,11 @@ function showMainMenu() {
     document.getElementById('main-menu').classList.add('active-page');
 }
 
+function enableScroll() {
+    document.body.style.overflow = 'auto';
+    document.body.style.height = 'auto';
+}
+
 function loadModelViewer() {
     document.querySelectorAll('.container-fluid').forEach(page => {
         page.classList.add('d-none');
@@ -239,4 +244,6 @@ function loadModelViewer() {
         document.getElementById('viewer-page').classList.remove('d-none');
         init3DFallback();
     }
+
+    enableScroll();
 }
