@@ -1,131 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QCC PDS 2025</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <script>
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        
+        if (isIOS) {
+            window.location.href = 'index-ios.html';
+        } else if (isAndroid) {
+            window.location.href = 'index-android.html';
+        } else {
+            window.location.href = 'index-desktop.html';
+        }
+    </script>
 </head>
-
-<body class="bg-light">
-    <!-- Main Menu -->
-    <div id="main-menu" class="container-fluid vh-100 d-flex flex-column justify-content-center active-page">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center mb-5">
-                <h1 class="display-4 fw-bold">Pilih Jenis Tower</h1>
-            </div>
-
-            <div class="col-md-8 col-lg-6">
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card tower-option h-100" data-model="tower1">
-                            <img src="assets/tower1.png" class="card-img-top p-3" alt="Menara Utama" loading="lazy">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Three Legs</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card tower-option h-100" data-model="tower2">
-                            <img src="assets/tower2.png" class="card-img-top p-3" alt="Menara Modern" loading="lazy">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Pole</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card tower-option h-100" data-model="tower3">
-                            <img src="assets/tower3.png" class="card-img-top p-3" alt="Menara Klasik" loading="lazy">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Mini Tower</h5>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- AR/3D Viewer Page -->
-    <div id="viewer-page" class="container-fluid vh-100 position-relative d-none">
-        <div id="info-box" class="alert alert-dark position-absolute top-0 start-0 m-3 d-none" style="max-width: 300px; z-index: 1000;">
-            Informasi akan muncul di sini
-        </div>
-
-        <button id="ar-button" class="btn btn-primary position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            Mulai AR
-        </button>
-
-        <div id="fallback-container" class="position-absolute top-0 start-0 w-100 h-100 d-none"></div>
-
-        <button id="back-button" class="btn btn-secondary position-absolute bottom-0 start-50 translate-middle-x mb-3">
-            Kembali
-        </button>
-    </div>
-
-    <!-- iOS Quick Look Page -->
-    <div id="ar-quicklook" class="container-fluid vh-100 d-flex flex-column justify-content-center d-none">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6 text-center">
-                <h2 class="mb-4">Pilih Tower Dalam Augmented Reality</h2>
-                <p class="mb-4">Gunakan Quick Look di perangkat iOS</p>
-
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <a href="assets/tower1.usdz" rel="ar" class="text-decoration-none">
-                            <div class="card h-100 tower-option">
-                                <img src="assets/tower1.png" class="card-img-top p-3" alt="Three Legs Tower" loading="lazy">
-                                <div class="card-body">
-                                    <p class="card-text">Three Legs</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-md-4">
-                        <a href="assets/tower2.usdz" rel="ar" class="text-decoration-none">
-                            <div class="card h-100 tower-option">
-                                <img src="assets/tower2.png" class="card-img-top p-3" alt="Pole Tower" loading="lazy">
-                                <div class="card-body">
-                                    <p class="card-text">Pole</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-md-4">
-                        <a href="assets/tower3.usdz" rel="ar" class="text-decoration-none">
-                            <div class="card h-100 tower-option">
-                                <img src="assets/tower3.png" class="card-img-top p-3" alt="Mini Tower" loading="lazy">
-                                <div class="card-body">
-                                    <p class="card-text">Mini Tower</p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <button id="quicklook-back" class="btn btn-secondary mt-4">
-                    Kembali
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/webxr/ARButton.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-    <script src="app.js"></script>
+<body>
+    <p>Redirecting to the appropriate version...</p>
 </body>
-
 </html>
