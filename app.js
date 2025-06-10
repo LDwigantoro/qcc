@@ -2,7 +2,7 @@
 
 // -- VARIABEL GLOBAL -- //
 let camera, scene, renderer, controller, model;
-let fallbackScene, fallbackCamera, fallbackRenderer;
+let fallbackScene, fallbackCamera, fallbackRenderer, controls;
 
 // Deteksi jenis perangkat
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -210,10 +210,14 @@ function init3DFallback() {
 
     // Loop animasi
     const animateFallback = () => {
-        requestAnimationFrame(animateFallback);
-        controls.update();
+    if (!fallbackRenderer) return; // Exit if renderer doesn't exist
+    
+    requestAnimationFrame(animateFallback);
+    if (controls) controls.update();
+    if (fallbackRenderer && fallbackScene && fallbackCamera) {
         fallbackRenderer.render(fallbackScene, fallbackCamera);
-    };
+    }
+};
     animateFallback();
 }
 
@@ -324,13 +328,27 @@ function cleanupRenderers() {
         }
         renderer = null;
     }
+    
     if (fallbackRenderer) {
+        // Clean up controls first if they exist
+        if (controls) {
+            controls.dispose();
+            controls = null;
+        }
+        
         fallbackRenderer.dispose();
         if (fallbackRenderer.domElement.parentNode) {
             fallbackRenderer.domElement.parentNode.removeChild(fallbackRenderer.domElement);
         }
         fallbackRenderer = null;
     }
+    
+    // Also clean up other resources
+    if (scene) scene = null;
+    if (camera) camera = null;
+    if (fallbackScene) fallbackScene = null;
+    if (fallbackCamera) fallbackCamera = null;
+    if (model) model = null;
 }
 
 /**
