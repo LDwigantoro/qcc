@@ -14,8 +14,8 @@ let currentModel = 'tower1';
 
 // 3D model URLs - standardized for consistency
 const modelUrls = {
-    'tower1': { glb: './assets/tower4.glb', usdz: './assets/tower1.usdz' }, // Ensure tower1.usdz exists
-    'tower2': { glb: './assets/tower5.glb', usdz: './assets/tower2.usdz' }, // Ensure tower2.usdz exists (previously tower4.usdz in HTML)
+    'tower1': { glb: './assets/tower4.glb', usdz: './assets/tower4.usdz' }, // Ensure tower1.usdz exists
+    'tower2': { glb: './assets/tower5.glb', usdz: './assets/tower5.usdz' }, // Ensure tower2.usdz exists (previously tower4.usdz in HTML)
     'tower3': { glb: './assets/tower3.glb', usdz: './assets/tower3.usdz' }
 };
 let currentModelUrl = modelUrls[currentModel].glb; // Default to GLB
