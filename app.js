@@ -10,12 +10,12 @@ const isAndroid = /Android/i.test(navigator.userAgent);
 const isMobile = isIOS || isAndroid;
 
 let isARSupported = false;
-let currentModel = 'tower1';
+let currentModel = 'tower4';
 
 // URL model 3D
 const modelUrls = {
-    'tower1': { glb: './assets/tower4.glb', usdz: './assets/tower4.usdz' },
-    'tower2': { glb: './assets/tower5.glb', usdz: './assets/tower5.usdz' },
+    'tower4': { glb: './assets/tower4.glb', usdz: './assets/tower4.usdz' },
+    'tower5': { glb: './assets/tower5.glb', usdz: './assets/tower5.usdz' },
     'tower3': { glb: './assets/tower3.glb', usdz: './assets/tower3.usdz' }
 };
 let currentModelUrl = modelUrls[currentModel].glb;
