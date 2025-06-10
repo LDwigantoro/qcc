@@ -195,13 +195,6 @@ function initWebXR() {
     // Create and append the AR Button (from Three.js ARButton.js)
     if (typeof ARButton !== 'undefined') {
         const arButtonElement = ARButton.createButton(renderer, sessionInit);
-        // Ensure the button is added to a place accessible within the viewer-page
-        // Or consider putting it outside and just managing its visibility.
-        // For now, let's assume the HTML already has a place for ARButton.
-        // The existing 'ar-button' in HTML should be used instead of ARButton.createButton,
-        // which typically creates a new button. If ARButton.js provides a way to attach, use that.
-        // For simplicity, we'll let ARButton.createButton add its own button.
-        // The existing 'ar-button' element can then be removed or hidden.
         if (viewerPage) viewerPage.appendChild(arButtonElement);
         if (arButton) arButton.style.display = 'none'; // Hide the original button if ARButton.js adds its own
     } else {
